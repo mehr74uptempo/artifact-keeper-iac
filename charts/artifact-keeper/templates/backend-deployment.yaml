@@ -73,7 +73,7 @@ spec:
               memory: 64Mi
               ephemeral-storage: 128Mi
         {{- end }}
-        {{- if or .Values.postgres.enabled .Values.backend.database.existingSecret }}
+        {{- if or .Values.postgres.enabled (include "artifact-keeper.dedicatedDatabase" .) }}
         - name: wait-for-postgres
           image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
           {{- with .Values.backend.initContainerSecurityContext }}
@@ -89,7 +89,7 @@ spec:
               cpu: 100m
               memory: 64Mi
               ephemeral-storage: 64Mi
-          {{- if .Values.backend.database.existingSecret }}
+          {{- if include "artifact-keeper.dedicatedDatabase" . }}
           # pg_isready reads PGHOST/PGPORT/PGUSER from the environment.
           env:
             - name: PGHOST
@@ -195,7 +195,7 @@ spec:
               value: {{ $value | quote }}
             {{- end }}
             - name: DATABASE_URL
-              {{- if .Values.backend.database.existingSecret }}
+              {{- if include "artifact-keeper.dedicatedDatabase" . }}
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.backend.database.existingSecret }}

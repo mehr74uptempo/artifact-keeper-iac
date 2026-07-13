@@ -43,6 +43,9 @@
 # The shared in-cluster PostgreSQL is replaced by the two CNPG clusters.
 postgres:
   enabled: false
+  
+externalDatabase:
+  enabled: false
 
 backend:
   database:
