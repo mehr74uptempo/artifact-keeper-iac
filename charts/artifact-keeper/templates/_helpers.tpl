@@ -136,6 +136,20 @@ app.kubernetes.io/component: dependency-track
 {{- end }}
 
 {{/*
+Database mode selection. The in-cluster postgres wins when enabled and
+ignores every other database setting. With postgres disabled the legacy
+externalDatabase remains the default; setting externalDatabase.enabled to
+false switches backend and DependencyTrack to their per-service
+database.existingSecret references (e.g. CloudNativePG `<cluster>-app`
+Secrets). Returns "true" when the per-service references are active.
+*/}}
+{{- define "artifact-keeper.dedicatedDatabase" -}}
+{{- if and (not .Values.postgres.enabled) (hasKey .Values.externalDatabase "enabled") (not .Values.externalDatabase.enabled) -}}
+true
+{{- end -}}
+{{- end }}
+
+{{/*
 Per-service database secret key lookups, defaulting to the CloudNativePG
 application-secret key names when secretKeys (or an individual key) is unset.
 */}}
@@ -178,6 +192,14 @@ ServiceAccount name
 {{- end -}}
 {{- if lt (len .Values.secrets.jwtSecret) 32 -}}
 {{- fail "secrets.jwtSecret must be at least 32 characters; the backend refuses shorter secrets at startup. Generate one with e.g. `openssl rand -base64 48`" -}}
+{{- end -}}
+{{- end -}}
+{{- if include "artifact-keeper.dedicatedDatabase" . -}}
+{{- if not .Values.backend.database.existingSecret -}}
+{{- fail "backend.database.existingSecret is required when externalDatabase.enabled is false" -}}
+{{- end -}}
+{{- if and .Values.dependencyTrack.enabled (not .Values.dependencyTrack.database.existingSecret) -}}
+{{- fail "dependencyTrack.database.existingSecret is required when externalDatabase.enabled is false" -}}
 {{- end -}}
 {{- end -}}
 {{- if not .Values.externalSecrets.enabled -}}
