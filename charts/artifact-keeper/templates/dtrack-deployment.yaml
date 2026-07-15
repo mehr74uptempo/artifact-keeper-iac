@@ -322,7 +322,8 @@ spec:
       {{- end }}
       containers:
         - name: dtrack-init
-          image: alpine:3.20
+          image: "{{ .Values.dependencyTrack.bootstrap.image.repository }}:{{ .Values.dependencyTrack.bootstrap.image.tag }}"
+          imagePullPolicy: {{ .Values.dependencyTrack.bootstrap.image.pullPolicy }}
           {{- with .Values.dependencyTrack.bootstrap.containerSecurityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
@@ -339,7 +340,6 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              apk add --no-cache curl jq >/dev/null 2>&1
               /bin/sh /scripts/init-dtrack.sh
           env:
             - name: DEPENDENCY_TRACK_URL

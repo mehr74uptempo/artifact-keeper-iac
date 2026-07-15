@@ -209,5 +209,8 @@ ServiceAccount name
 {{- if and .Values.opensearch.enabled (not .Values.opensearch.disableSecurityPlugin) (eq .Values.opensearch.auth.password "") -}}
 {{- fail "opensearch.auth.password is required when opensearch is enabled and disableSecurityPlugin is false. Set it with --set opensearch.auth.password=<value>" -}}
 {{- end -}}
+{{- if and .Values.dependencyTrack.enabled .Values.dependencyTrack.bootstrap.enabled (eq .Values.dependencyTrack.adminPassword "") -}}
+{{- fail "dependencyTrack.adminPassword is required when dependencyTrack.bootstrap.enabled is true: the bootstrap Job changes the DependencyTrack admin password from its default and provisions the Automation API key, and an empty password makes that Job fail. Set it with --set dependencyTrack.adminPassword=<value> (use only URL-safe characters, e.g. alphanumerics, since the bootstrap script sends it as form data), or disable the Job with --set dependencyTrack.bootstrap.enabled=false." -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}

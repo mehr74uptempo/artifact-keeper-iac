@@ -806,6 +806,17 @@ dependencyTrack:
       ephemeral-storage: 1Gi
   bootstrap:
     enabled: true
+    # -- Image for the one-shot DependencyTrack bootstrap Job. It MUST already
+    # contain `curl` and `jq`. The bootstrap pod runs non-root (see
+    # podSecurityContext below), so installing packages at runtime with
+    # `apk add` fails ("Unable to lock database: Permission denied"); shipping
+    # the tools in the image avoids any runtime package install or network
+    # egress. Pin to a digest or mirror this into your own registry for
+    # production.
+    image:
+      repository: badouralix/curl-jq
+      tag: latest
+      pullPolicy: IfNotPresent
     podSecurityContext:
       runAsNonRoot: true
       runAsUser: 1000
